@@ -1,0 +1,25 @@
+{% extends "master.html" %}
+{% block title %}Edit Car{% endblock %}
+{% block page_title %}Edit Car{% endblock %}
+{% block content %}
+<div style="max-width:560px">
+  <div class="card">
+    <form method="post">{% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group"><label>Plate Number</label><input name="plate_number" value="{{ car.plate_number }}" required></div>
+        <div class="form-group"><label>Car Type</label>
+          <select name="car_type">{% for v,l in car_types %}<option value="{{ v }}" {% if car.car_type == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group"><label>Make</label><input name="make" value="{{ car.make }}"></div>
+        <div class="form-group"><label>Model</label><input name="model_name" value="{{ car.model_name }}"></div>
+        <div class="form-group"><label>Year</label><input name="year" type="number" value="{{ car.year|default:'' }}"></div>
+        <div class="form-group"><label>Color</label><input name="color" value="{{ car.color }}"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-primary">Update Car</button>
+        <a href="{% url 'customer_detail' car.customer_id %}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

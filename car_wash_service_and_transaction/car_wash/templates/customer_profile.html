@@ -1,0 +1,209 @@
+{% extends "customer_base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div style="padding-top:12px">
+
+  <!-- Page header -->
+  <div style="margin-bottom:32px">
+    <div style="font-size:.7rem;font-weight:700;letter-spacing:.15em;color:#e63030;text-transform:uppercase;margin-bottom:6px">Account</div>
+    <h1 style="font-size:1.8rem;font-weight:800;color:#fff">My Profile</h1>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px">
+
+    <!-- Personal Info (view mode) -->
+    <div class="card" style="background:#111;border-color:#222" id="view-card">
+      <div class="card-header">
+        <span class="card-title" style="color:#fff">Personal Information</span>
+        <button onclick="toggleEdit()" class="btn btn-ghost btn-sm" id="edit-btn">✏️ Edit</button>
+      </div>
+
+      <!-- View Mode -->
+      <div id="view-mode">
+        <div style="display:flex;flex-direction:column;gap:14px;padding-top:4px">
+          <div>
+            <div style="font-size:.7rem;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">First Name</div>
+            <div style="color:#fff;font-size:.92rem">{{ customer.first_name }}</div>
+          </div>
+          <div>
+            <div style="font-size:.7rem;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Middle Name</div>
+            <div style="color:#fff;font-size:.92rem">{{ customer.middle_name|default:"—" }}</div>
+          </div>
+          <div>
+            <div style="font-size:.7rem;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Last Name</div>
+            <div style="color:#fff;font-size:.92rem">{{ customer.last_name }}</div>
+          </div>
+          <div>
+            <div style="font-size:.7rem;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Contact Number</div>
+            <div style="color:#fff;font-size:.92rem">{{ customer.contact_number|default:"—" }}</div>
+          </div>
+          <div>
+            <div style="font-size:.7rem;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Address</div>
+            <div style="color:#fff;font-size:.92rem">{{ customer.address|default:"—" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Mode (hidden by default) -->
+      <div id="edit-mode" style="display:none">
+        <form method="post" action="{% url 'portal_profile' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label style="color:#666">First Name</label>
+            <input name="first_name" value="{{ customer.first_name }}" required
+                   style="background:#1a1a1a;border-color:#333;color:#fff">
+          </div>
+          <div class="form-group">
+            <label style="color:#666">Middle Name</label>
+            <input name="middle_name" value="{{ customer.middle_name }}"
+                   style="background:#1a1a1a;border-color:#333;color:#fff">
+          </div>
+          <div class="form-group">
+            <label style="color:#666">Last Name</label>
+            <input name="last_name" value="{{ customer.last_name }}" required
+                   style="background:#1a1a1a;border-color:#333;color:#fff">
+          </div>
+          <div class="form-group">
+            <label style="color:#666">Contact Number</label>
+            <input name="contact_number" value="{{ customer.contact_number }}"
+                   style="background:#1a1a1a;border-color:#333;color:#fff">
+          </div>
+          <div class="form-group">
+            <label style="color:#666">Address</label>
+            <input name="address" value="{{ customer.address }}"
+                   style="background:#1a1a1a;border-color:#333;color:#fff">
+          </div>
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center">Save Changes</button>
+            <button type="button" onclick="toggleEdit()" class="btn btn-ghost">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- My Vehicles -->
+    <div class="card" style="background:#111;border-color:#222">
+      <div class="card-header">
+        <span class="card-title" style="color:#fff">My Vehicles</span>
+        <a href="{% url 'portal_add_car' %}" class="btn btn-ghost btn-sm">+ Add</a>
+      </div>
+      {% for car in cars %}
+      <div style="padding:12px 0;border-bottom:1px solid #222">
+        <div style="font-weight:600;color:#fff;font-size:.9rem">{{ car.plate_number }}</div>
+        <div style="color:#666;font-size:.78rem;margin-top:3px">
+          {{ car.year|default:"" }} {{ car.make }} {{ car.model_name }}
+          {% if car.color %} · {{ car.color }}{% endif %}
+          · {{ car.get_car_type_display }}
+        </div>
+      </div>
+      {% empty %}
+      <p style="color:#666;font-size:.85rem;padding:8px 0">
+        No vehicles yet. <a href="{% url 'portal_add_car' %}" style="color:#4f9cf9">Add one</a>.
+      </p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Current / Pending Transactions -->
+  <div class="card" style="background:#111;border-color:#222;margin-bottom:24px">
+    <div class="card-header">
+      <span class="card-title" style="color:#fff">Current & Pending Transactions</span>
+      <a href="{% url 'portal_book' %}" class="btn btn-primary btn-sm">+ Book</a>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Service</th><th>Car</th><th>Amount</th><th>Scheduled</th><th>Status</th><th>Payment</th><th>Date</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for tx in active_transactions %}
+          <tr>
+            <td style="color:#666">#{{ tx.pk }}</td>
+            <td style="color:#fff">{{ tx.service.service_name }}</td>
+            <td style="color:#666">{% if tx.car %}{{ tx.car.plate_number }}{% else %}—{% endif %}</td>
+            <td style="color:#fff;font-size:.82rem">{% if tx.scheduled_date %}{{ tx.scheduled_date|date:"M d, Y" }}<br><span style="color:#666">{{ tx.scheduled_time|time:"g:i A" }}</span>{% else %}<span style="color:#444">—</span>{% endif %}</td>
+            <td style="font-weight:700;color:#e63030">₱{{ tx.amount }}</td>
+            <td><span class="badge badge-{{ tx.status }}">{{ tx.get_status_display }}</span></td>
+            <td>
+              {% if tx.payment %}
+                <span class="badge badge-{{ tx.payment.status }}">{{ tx.payment.get_status_display }}</span>
+              {% else %}
+                <a href="{% url 'portal_pay' tx.pk %}" class="btn btn-primary btn-sm">Pay Now</a>
+              {% endif %}
+            </td>
+            <td style="color:#666;font-size:.78rem">{{ tx.transaction_date|date:"M d, Y" }}</td>
+            <td>
+              {% if tx.status == 'pending' %}
+              <form method="post" action="{% url 'portal_cancel_transaction' tx.pk %}"
+                    onsubmit="return confirm('Cancel transaction #{{ tx.pk }}?')">
+                {% csrf_token %}
+                <button class="btn btn-danger btn-sm">Cancel</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" style="text-align:center;color:#666;padding:24px">No active transactions.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Transaction History -->
+  <div class="card" style="background:#111;border-color:#222">
+    <div class="card-header">
+      <span class="card-title" style="color:#fff">Transaction History</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Service</th><th>Car</th><th>Amount</th><th>Status</th><th>Payment</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+          {% for tx in past_transactions %}
+          <tr>
+            <td style="color:#666">#{{ tx.pk }}</td>
+            <td style="color:#fff">{{ tx.service.service_name }}</td>
+            <td style="color:#666">{% if tx.car %}{{ tx.car.plate_number }}{% else %}—{% endif %}</td>
+            <td style="font-weight:700;color:#fff">₱{{ tx.amount }}</td>
+            <td><span class="badge badge-{{ tx.status }}">{{ tx.get_status_display }}</span></td>
+            <td>
+              {% if tx.payment %}
+                <span class="badge badge-{{ tx.payment.status }}">{{ tx.payment.get_status_display }}</span>
+              {% else %}
+                <span style="color:#444;font-size:.78rem">—</span>
+              {% endif %}
+            </td>
+            <td style="color:#666;font-size:.78rem">{{ tx.transaction_date|date:"M d, Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" style="text-align:center;color:#666;padding:24px">No history yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleEdit() {
+  const viewMode = document.getElementById('view-mode');
+  const editMode = document.getElementById('edit-mode');
+  const editBtn  = document.getElementById('edit-btn');
+  const isEditing = editMode.style.display === 'block';
+
+  viewMode.style.display = isEditing ? 'block' : 'none';
+  editMode.style.display = isEditing ? 'none'  : 'block';
+  editBtn.textContent    = isEditing ? '✏️ Edit' : '✕ Cancel';
+}
+</script>
+{% endblock %}

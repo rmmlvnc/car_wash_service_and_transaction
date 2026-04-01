@@ -1,0 +1,56 @@
+{% extends "master.html" %}
+{% block title %}New Transaction{% endblock %}
+{% block page_title %}New Transaction{% endblock %}
+{% block content %}
+<div style="max-width:560px">
+  <div class="breadcrumb"><a href="{% url 'transaction_list' %}">Transactions</a> / New</div>
+  <div class="card" style="margin-top:12px">
+    <form method="post">{% csrf_token %}
+      <div class="form-group">
+        <label>Customer *</label>
+        <select name="customer" id="customer-select" required>
+          <option value="">— Select Customer —</option>
+          {% for c in customers %}<option value="{{ c.pk }}" {% if post.customer == c.pk|stringformat:"s" %}selected{% endif %}>{{ c }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Car</label>
+        <select name="car" id="car-select">
+          <option value="">— Select Customer First —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Service *</label>
+        <select name="service" required>
+          <option value="">— Select Service —</option>
+          {% for s in services %}<option value="{{ s.pk }}">{{ s.service_name }} ({{ s.service_type }}) — ₱{{ s.price }} / {{ s.duration_minutes }}min</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea name="notes"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-primary">Create Transaction</button>
+        <a href="{% url 'transaction_list' %}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+// Populate cars when customer changes
+const carData = {
+  {% for c in customers %}
+  "{{ c.pk }}": [{% for car in c.cars.all %}{"id":"{{ car.pk }}","label":"{{ car.plate_number }} — {{ car.make }} {{ car.model_name }}"},{% endfor %}],
+  {% endfor %}
+};
+document.getElementById('customer-select').addEventListener('change', function(){
+  const sel = document.getElementById('car-select');
+  sel.innerHTML = '<option value="">— No specific car —</option>';
+  const cars = carData[this.value] || [];
+  cars.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.label}</option>`);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Register — SparkWash</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body style="display:block">
+<div class="auth-wrap">
+  <div class="auth-card" style="max-width:520px">
+    <div class="auth-logo">
+      <div class="name">✦ SparkWash</div>
+      <small>Create your account</small>
+    </div>
+
+    {% if messages %}
+      {% for m in messages %}
+      <div class="alert alert-error" style="margin-bottom:16px">{{ m }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post">{% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group"><label>First Name *</label><input name="first_name" value="{{ post.first_name|default:'' }}" required autofocus></div>
+        <div class="form-group"><label>Middle Name</label><input name="middle_name" value="{{ post.middle_name|default:'' }}"></div>
+        <div class="form-group"><label>Last Name *</label><input name="last_name" value="{{ post.last_name|default:'' }}" required></div>
+        <div class="form-group"><label>Contact Number</label><input name="contact_number" value="{{ post.contact_number|default:'' }}"></div>
+        <div class="form-group col-span-2"><label>Address</label><input name="address" value="{{ post.address|default:'' }}"></div>
+        <div class="form-group col-span-2" style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px"></div>
+        <div class="form-group col-span-2"><label>Username *</label><input name="username" value="{{ post.username|default:'' }}" required></div>
+        <div class="form-group"><label>Password *</label><input name="password" type="password" required></div>
+        <div class="form-group"><label>Confirm Password *</label><input name="password2" type="password" required></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:10px;margin-top:8px">Create Account</button>
+    </form>
+    <div class="auth-footer">Already have an account? <a href="{% url 'portal_login' %}">Login</a></div>
+  </div>
+</div>
+</body>
+</html>

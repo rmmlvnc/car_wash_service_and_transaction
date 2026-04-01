@@ -1,0 +1,35 @@
+{% extends "master.html" %}
+{% block title %}Customers{% endblock %}
+{% block page_title %}Customers{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'add_customer' %}" class="btn btn-primary btn-sm">+ Add Customer</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Contact</th><th>Address</th><th>Cars</th><th>Transactions</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for c in customer_list %}
+        <tr>
+          <td><a href="{% url 'customer_detail' c.pk %}" style="color:var(--text);text-decoration:none;font-weight:500">{{ c }}</a></td>
+          <td style="color:var(--muted)">{{ c.contact_number|default:"—" }}</td>
+          <td style="color:var(--muted)">{{ c.address|default:"—" }}</td>
+          <td><span class="badge badge-active">{{ c.cars.count }}</span></td>
+          <td><span class="badge badge-pending">{{ c.transactions.count }}</span></td>
+          <td>
+            <a href="{% url 'customer_detail' c.pk %}" class="btn btn-ghost btn-sm">View</a>
+            <a href="{% url 'customer_edit' c.pk %}" class="btn btn-ghost btn-sm">Edit</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No customers yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

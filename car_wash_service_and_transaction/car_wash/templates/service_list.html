@@ -1,0 +1,30 @@
+{% extends "master.html" %}
+{% block title %}Services{% endblock %}
+{% block page_title %}Services{% endblock %}
+{% block topbar_actions %}<a href="{% url 'service_new' %}" class="btn btn-primary btn-sm">+ New Service</a>{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Service Name</th><th>Type</th><th>Price</th><th>Duration</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for s in service_list %}
+        <tr>
+          <td style="font-weight:500">{{ s.service_name }}</td>
+          <td style="color:var(--muted)">{{ s.service_type }}</td>
+          <td>₱{{ s.price }}</td>
+          <td style="color:var(--muted)">{{ s.duration_minutes }} min</td>
+          <td>
+            <a href="{% url 'service_edit' s.pk %}" class="btn btn-ghost btn-sm">Edit</a>
+            <a href="{% url 'service_delete' s.pk %}" class="btn btn-danger btn-sm">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No services yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

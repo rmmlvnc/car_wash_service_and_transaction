@@ -1,0 +1,126 @@
+{% extends "customer_base.html" %}
+{% block title %}Pay for Booking #{{ transaction.pk }}{% endblock %}
+{% block extra_head %}
+<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=PHP"></script>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:480px">
+  <h1 style="font-size:1.4rem;font-weight:700;margin-bottom:4px">Complete Payment</h1>
+  <p style="color:var(--muted);margin-bottom:24px">Booking #{{ transaction.pk }}</p>
+
+  <div class="card">
+    <div class="pay-summary">
+      <div class="di-label">Service</div>
+      <div style="font-weight:600;margin-bottom:4px">{{ transaction.service.service_name }}</div>
+      <div style="color:var(--muted);font-size:.8rem;margin-bottom:12px">
+        {{ transaction.service.service_type }} · ⏱ {{ transaction.service.duration_minutes }} min
+      </div>
+      {% if transaction.car %}
+      <div class="di-label">Vehicle</div>
+      <div style="margin-bottom:12px">{{ transaction.car.plate_number }} — {{ transaction.car.make }} {{ transaction.car.model_name }}</div>
+      {% endif %}
+      <hr class="divider">
+      <div class="di-label">Amount Due</div>
+      <div class="pay-amount">₱{{ transaction.amount }}</div>
+    </div>
+
+    <!-- Method tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <button class="btn btn-ghost" id="tab-cash" onclick="showTab('cash')" style="flex:1;justify-content:center">💵 Cash</button>
+      <button class="btn btn-ghost" id="tab-paypal" onclick="showTab('paypal')" style="flex:1;justify-content:center">🔵 PayPal</button>
+    </div>
+
+    <!-- Cash Section -->
+    <div id="section-cash">
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Pay in cash at our counter. We'll mark your booking as paid upon receipt.</p>
+      <form method="post" action="{% url 'payment_create' transaction.pk %}">{% csrf_token %}
+        <input type="hidden" name="payment_method" value="cash">
+        <button class="btn btn-success" style="width:100%;justify-content:center;padding:11px">Confirm Cash Payment</button>
+      </form>
+    </div>
+
+    <!-- PayPal Section -->
+    <div id="section-paypal" style="display:none">
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Pay securely via PayPal Sandbox. You'll be guided through the PayPal payment flow.</p>
+      <div id="paypal-status" style="display:none;margin-bottom:12px"></div>
+      <div id="paypal-button-container"></div>
+    </div>
+
+    <div style="margin-top:16px">
+      <a href="{% url 'portal_home' %}" class="btn btn-ghost" style="width:100%;justify-content:center">← Back to Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CAPTURE_URL  = "{% url 'paypal_capture' transaction.pk %}";
+const REDIRECT_URL = "{% url 'portal_home' %}";
+const CSRF_TOKEN   = "{{ csrf_token }}";
+
+function showTab(tab) {
+  document.getElementById('section-cash').style.display   = tab === 'cash'   ? 'block' : 'none';
+  document.getElementById('section-paypal').style.display = tab === 'paypal' ? 'block' : 'none';
+  document.getElementById('tab-cash').style.borderColor   = tab === 'cash'   ? 'var(--accent)' : 'var(--border)';
+  document.getElementById('tab-paypal').style.borderColor = tab === 'paypal' ? 'var(--accent)' : 'var(--border)';
+  document.getElementById('tab-cash').style.color         = tab === 'cash'   ? 'var(--text)' : 'var(--muted)';
+  document.getElementById('tab-paypal').style.color       = tab === 'paypal' ? 'var(--text)' : 'var(--muted)';
+}
+showTab('cash');
+
+paypal.Buttons({
+  style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' },
+
+  createOrder: function(data, actions) {
+    return actions.order.create({
+      purchase_units: [{
+        description: "{{ transaction.service.service_name|escapejs }} — SparkWash",
+        amount: { value: "{{ transaction.amount }}", currency_code: "PHP" }
+      }]
+    });
+  },
+
+  onApprove: async function(data, actions) {
+    const el = document.getElementById('paypal-status');
+    el.style.display = 'block';
+    el.className = 'alert alert-info';
+    el.textContent = 'Processing payment…';
+
+    try {
+      const form = new FormData();
+      form.append('orderID', data.orderID);
+      form.append('payerID', data.payerID);
+      form.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+      const res = await fetch(CAPTURE_URL, { method: 'POST', body: form });
+
+      if (res.ok) {
+        el.className = 'alert alert-success';
+        el.textContent = '✓ Payment successful! Redirecting to dashboard…';
+        setTimeout(() => window.location.href = REDIRECT_URL, 2000);
+      } else { throw new Error(); }
+    } catch {
+      el.className = 'alert alert-error';
+      el.textContent = 'Payment capture failed. Please try again.';
+    }
+  },
+
+  onError: function(err) {
+    const el = document.getElementById('paypal-status');
+    el.style.display = 'block';
+    el.className = 'alert alert-error';
+    el.textContent = 'PayPal error. Please try again or use cash.';
+  },
+
+  onCancel: function() {
+    const el = document.getElementById('paypal-status');
+    el.style.display = 'block';
+    el.className = 'alert alert-info';
+    el.textContent = 'Payment cancelled.';
+  }
+
+}).render('#paypal-button-container');
+</script>
+{% endblock %}

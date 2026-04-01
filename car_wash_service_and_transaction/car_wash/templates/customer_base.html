@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}SparkWash{% endblock %} — Customer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'styles.css' %}">
+<link rel="stylesheet" href="{% static 'customer_base.css' %}">
+{% block extra_head %}{% endblock %}
+</head>
+<body style="display:block;background:#000">
+
+<div class="portal-wrap" style="background:#000">
+
+  <!-- TOP INFO BAR -->
+  <div class="topinfo-bar">
+    <div class="topinfo-inner">
+      <div class="topinfo-left">
+        <span><span class="ti-icon red">📱</span> +63 965 548 2538</span>
+        <span class="ti-sep">|</span>
+        <span><span class="ti-icon red">📍</span> 67M2+5V2, Seminary Dr, Iligan City, Lanao del Norte, Philippines</span>
+      </div>
+      <div class="topinfo-right">
+        <span class="open-daily">OPEN MONDAY - SATURDAY</span>
+        <span class="ti-sep">|</span>
+        <span>6:00 AM – 6:00 PM</span>
+        <span class="ti-sep">|</span>
+        <span>CLOSED on Sunday</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN NAV -->
+  <nav class="main-nav">
+    <div class="main-nav-inner">
+      <!-- Logo -->
+      <div class="brand">
+        <span class="brand-name">Twin A&A</span>
+        <span class="brand-sub">CARWASH &amp; DETAILING SERVICES</span>
+      </div>
+
+      <!-- Links -->
+      <div class="main-nav-links">
+        <a href="{% url 'portal_home' %}" class="mnl">HOME</a>
+        <a href="{% url 'portal_home' %}#about" class="mnl">ABOUT</a>
+        <a href="{% url 'portal_home' %}#services" class="mnl">SERVICES</a>
+        <a href="{% url 'portal_cars' %}" class="mnl">MY CARS</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'portal_profile' %}" class="mnl-username">
+            👤 {{ user.get_full_name|default:user.username }}
+          </a>
+          <a href="{% url 'portal_logout' %}" class="mnl-btn-red">LOGOUT →</a>
+        {% else %}
+          <a href="{% url 'portal_login' %}" class="mnl">LOGIN</a>
+          <a href="{% url 'portal_register' %}" class="mnl-btn-red">REGISTER →</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- BODY -->
+  <div class="portal-body" style="background:#000;max-width:1100px">
+    {% if messages %}
+    <div class="alerts" style="margin-bottom:16px">
+      {% for m in messages %}
+      <div class="alert alert-{% if m.tags == 'error' %}error{% elif m.tags == 'success' %}success{% else %}info{% endif %}">{{ m }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

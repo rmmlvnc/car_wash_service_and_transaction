@@ -1,0 +1,57 @@
+{% extends "master.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="label">Customers</div>
+    <div class="value accent">{{ total_customers }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Active Services</div>
+    <div class="value">{{ total_services }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Transactions</div>
+    <div class="value">{{ total_transactions }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Revenue (Paid)</div>
+    <div class="value green">₱{{ total_revenue }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Pending Payments</div>
+    <div class="value yellow">{{ pending_payments }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Recent Transactions</span>
+    <a href="{% url 'transaction_new' %}" class="btn btn-primary btn-sm">+ New</a>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Customer</th><th>Car</th><th>Service</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        {% for tx in recent_transactions %}
+        <tr>
+          <td><a href="{% url 'transaction_detail' tx.pk %}" style="color:var(--accent);text-decoration:none">#{{ tx.pk }}</a></td>
+          <td>{{ tx.customer }}</td>
+          <td>{% if tx.car %}{{ tx.car.plate_number }}{% else %}<span style="color:var(--muted)">—</span>{% endif %}</td>
+          <td>{{ tx.service.service_name }}</td>
+          <td>₱{{ tx.amount }}</td>
+          <td><span class="badge badge-{{ tx.status }}">{{ tx.get_status_display }}</span></td>
+          <td style="color:var(--muted);font-size:.8rem">{{ tx.transaction_date|date:"M d, Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No transactions yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

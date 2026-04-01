@@ -1,0 +1,91 @@
+/* ── Top info bar ─────────────────────────────────────── */
+.topinfo-bar {
+  background: #111;
+  border-bottom: 1px solid #222;
+  padding: 7px 0;
+  font-size: .75rem;
+  color: #aaa;
+}
+.topinfo-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 0 28px;
+  display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: 6px;
+}
+.topinfo-left, .topinfo-right {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.ti-sep { color: #444; }
+.ti-icon { margin-right: 3px; }
+.ti-icon.red { color: #e63030; }
+.open-daily { color: #e63030; font-weight: 700; letter-spacing: .05em; }
+
+/* ── Main nav ─────────────────────────────────────────── */
+.main-nav {
+  background: #000;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 0;
+  position: sticky; top: 0; z-index: 200;
+}
+.main-nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 0 28px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  height: 72px;
+}
+
+/* Brand / logo */
+.brand { display: flex; flex-direction: column; justify-content: center; }
+.brand-name {
+  font-size: 1.4rem; font-weight: 800;
+  color: #fff; letter-spacing: .06em;
+  line-height: 1; font-style: italic;
+}
+.brand-sub {
+  font-size: .6rem; color: #888;
+  letter-spacing: .18em; text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Nav links */
+.main-nav-links { display: flex; align-items: center; gap: 4px; }
+.mnl {
+  padding: 6px 14px;
+  color: #ccc; font-size: .78rem; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  text-decoration: none; transition: color .15s;
+}
+.mnl:hover { color: #fff; }
+
+/* Red CTA button */
+.mnl-btn-red {
+  display: inline-flex; align-items: center;
+  padding: 10px 20px;
+  background: #e63030; color: #fff;
+  font-size: .78rem; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  text-decoration: none; transition: background .15s;
+  margin-left: 8px;
+}
+.mnl-btn-red:hover { background: #c00; }
+
+/* ── Portal body spacing ──────────────────────────────── */
+.portal-body { padding: 36px 28px; margin: 0 auto; }
+
+/* ── Username link to profile ─────────────────────────── */
+.mnl-username {
+  display: inline-flex; align-items: center;
+  padding: 6px 12px;
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  margin-right: 4px;
+  text-decoration: none;
+  transition: background .15s, border-color .15s;
+}
+.mnl-username:hover { background: #262626; border-color: #e63030; color: #fff; }

@@ -1,0 +1,30 @@
+{% extends "master.html" %}
+{% block title %}Edit Service{% endblock %}
+{% block page_title %}Edit Service{% endblock %}
+{% block content %}
+<div style="max-width:560px">
+  <div class="card">
+    <form method="post">{% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group"><label>Service Name</label><input name="service_name" value="{{ service.service_name }}" required></div>
+        <div class="form-group"><label>Service Type</label><input name="service_type" value="{{ service.service_type }}" required></div>
+        <div class="form-group"><label>Price (₱)</label><input name="price" type="number" step="0.01" value="{{ service.price }}" required></div>
+        <div class="form-group"><label>Duration (minutes)</label><input name="duration_minutes" type="number" value="{{ service.duration_minutes }}"></div>
+        <div class="form-group col-span-2"><label>Description</label><textarea name="description">{{ service.description }}</textarea></div>
+
+        <div class="form-group col-span-2">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" name="is_package" {% if service.is_package %}checked{% endif %} style="width:auto">
+            Mark as a Package Deal
+          </label>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Package services will be displayed separately in the customer portal.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-primary">Update</button>
+        <a href="{% url 'service_list' %}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

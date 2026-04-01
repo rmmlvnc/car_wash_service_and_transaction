@@ -1,0 +1,46 @@
+{% extends "customer_base.html" %}
+{% block title %}Add a Car{% endblock %}
+
+{% block content %}
+<div style="max-width:520px">
+  <h1 style="font-size:1.4rem;font-weight:700;margin-bottom:4px">Add a Vehicle</h1>
+  <p style="color:var(--muted);margin-bottom:24px">Register your car so we can serve you faster.</p>
+
+  <div class="card">
+    <form method="post">{% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Plate Number *</label>
+          <input name="plate_number" required placeholder="e.g. ABC 1234" style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label>Vehicle Type</label>
+          <select name="car_type">
+            {% for v, l in car_types %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Make / Brand</label>
+          <input name="make" placeholder="e.g. Toyota">
+        </div>
+        <div class="form-group">
+          <label>Model</label>
+          <input name="model_name" placeholder="e.g. Vios">
+        </div>
+        <div class="form-group">
+          <label>Year</label>
+          <input name="year" type="number" min="1950" max="2030" placeholder="e.g. 2022">
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <input name="color" placeholder="e.g. Pearl White">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center">Save Vehicle</button>
+        <a href="{% url 'portal_home' %}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "customer_base.html" %}
+{% block title %}My Transactions{% endblock %}
+
+{% block content %}
+<div style="padding-top:12px">
+  <div style="margin-bottom:28px">
+    <div style="font-size:.7rem;font-weight:700;letter-spacing:.15em;color:#e63030;text-transform:uppercase;margin-bottom:6px">History</div>
+    <h1 style="font-size:1.8rem;font-weight:800;color:#fff">My Transactions</h1>
+  </div>
+
+  <!-- Active / Pending -->
+  <div class="card" style="background:#111;border-color:#222;margin-bottom:24px">
+    <div class="card-header">
+      <span class="card-title" style="color:#fff">Current & Pending</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Service</th><th>Car</th><th>Amount</th><th>Status</th><th>Payment</th><th>Date</th><th></th></tr></thead>
+        <tbody>
+          {% for tx in active_transactions %}
+          <tr>
+            <td style="color:#666">#{{ tx.pk }}</td>
+            <td style="color:#fff">{{ tx.service.service_name }}</td>
+            <td style="color:#666">{% if tx.car %}{{ tx.car.plate_number }}{% else %}—{% endif %}</td>
+            <td style="font-weight:700;color:#e63030">₱{{ tx.amount }}</td>
+            <td><span class="badge badge-{{ tx.status }}">{{ tx.get_status_display }}</span></td>
+            <td>
+              {% if tx.payment %}
+                <span class="badge badge-{{ tx.payment.status }}">{{ tx.payment.get_status_display }}</span>
+              {% else %}
+                <a href="{% url 'portal_pay' tx.pk %}" class="btn btn-primary btn-sm">Pay Now</a>
+              {% endif %}
+            </td>
+            <td style="color:#666;font-size:.78rem">{{ tx.transaction_date|date:"M d, Y" }}</td>
+            <td>
+              {% if tx.status == 'pending' %}
+              <form method="post" action="{% url 'portal_cancel_transaction' tx.pk %}" onsubmit="return confirm('Cancel this transaction?')">
+                {% csrf_token %}
+                <button class="btn btn-danger btn-sm">Cancel</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" style="text-align:center;color:#666;padding:24px">No active transactions.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="card" style="background:#111;border-color:#222">
+    <div class="card-header">
+      <span class="card-title" style="color:#fff">Completed & Cancelled</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Service</th><th>Car</th><th>Amount</th><th>Status</th><th>Payment</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for tx in past_transactions %}
+          <tr>
+            <td style="color:#666">#{{ tx.pk }}</td>
+            <td style="color:#fff">{{ tx.service.service_name }}</td>
+            <td style="color:#666">{% if tx.car %}{{ tx.car.plate_number }}{% else %}—{% endif %}</td>
+            <td style="font-weight:700;color:#fff">₱{{ tx.amount }}</td>
+            <td><span class="badge badge-{{ tx.status }}">{{ tx.get_status_display }}</span></td>
+            <td>
+              {% if tx.payment %}
+                <span class="badge badge-{{ tx.payment.status }}">{{ tx.payment.get_status_display }}</span>
+              {% else %}
+                <span style="color:#444;font-size:.78rem">—</span>
+              {% endif %}
+            </td>
+            <td style="color:#666;font-size:.78rem">{{ tx.transaction_date|date:"M d, Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" style="text-align:center;color:#666;padding:24px">No history yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

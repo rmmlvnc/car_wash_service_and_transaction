@@ -1,0 +1,76 @@
+{% extends "customer_base.html" %}
+{% block title %}My Cars{% endblock %}
+
+{% block content %}
+<div style="padding-top:12px">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-size:.7rem;font-weight:700;letter-spacing:.15em;color:#e63030;text-transform:uppercase;margin-bottom:6px">Garage</div>
+      <h1 style="font-size:1.8rem;font-weight:800;color:#fff">My Vehicles</h1>
+    </div>
+    <a href="{% url 'portal_add_car' %}" class="mnl-btn-red" style="text-decoration:none">+ Add Vehicle</a>
+  </div>
+
+  {% if cars %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:32px">
+    {% for car in cars %}
+    <div style="background:#111;border:1px solid #222;border-radius:10px;padding:24px;position:relative;overflow:hidden;transition:border-color .15s"
+         onmouseover="this.style.borderColor='#e63030'" onmouseout="this.style.borderColor='#222'">
+
+      <!-- Checkered accent top-right -->
+      <div style="position:absolute;top:0;right:0;width:60px;height:60px;
+                  background:repeating-conic-gradient(#c00 0% 25%,#1a1a1a 0% 50%) 0 0/12px 12px;
+                  opacity:.25;border-bottom-left-radius:10px;pointer-events:none"></div>
+
+      <!-- Car type badge -->
+      <div style="display:inline-block;padding:3px 10px;background:#1a1a1a;border:1px solid #333;
+                  border-radius:999px;font-size:.68rem;font-weight:600;color:#888;
+                  text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">
+        {{ car.get_car_type_display }}
+      </div>
+
+      <!-- Plate -->
+      <div style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:.06em;margin-bottom:6px">
+        {{ car.plate_number }}
+      </div>
+
+      <!-- Details -->
+      <div style="color:#888;font-size:.85rem;line-height:1.6">
+        {% if car.make or car.model_name %}
+        <div>{{ car.year|default:"" }} {{ car.make }} {{ car.model_name }}</div>
+        {% endif %}
+        {% if car.color %}
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ car.color|lower }};border:1px solid #444"></span>
+          {{ car.color }}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Recent transaction -->
+      {% with tx=car.transactions.first %}
+      {% if tx %}
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid #222;font-size:.78rem">
+        <span style="color:#555">Last service:</span>
+        <span style="color:#ccc;margin-left:4px">{{ tx.service.service_name }}</span>
+        <span style="color:#444;margin-left:4px">· {{ tx.transaction_date|date:"M d, Y" }}</span>
+      </div>
+      {% endif %}
+      {% endwith %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- Empty state -->
+  <div style="text-align:center;padding:72px 24px">
+    <div style="font-size:3rem;margin-bottom:16px">🚗</div>
+    <div style="font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:8px">No vehicles yet</div>
+    <div style="color:#666;font-size:.88rem;margin-bottom:24px">Add your car so we can serve you faster on every visit.</div>
+    <a href="{% url 'portal_add_car' %}" class="mnl-btn-red" style="text-decoration:none;display:inline-flex">+ Add Your First Vehicle</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

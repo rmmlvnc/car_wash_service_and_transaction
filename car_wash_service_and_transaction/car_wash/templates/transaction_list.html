@@ -1,0 +1,36 @@
+{% extends "master.html" %}
+{% block title %}Transactions{% endblock %}
+{% block page_title %}Transactions{% endblock %}
+{% block topbar_actions %}<a href="{% url 'transaction_new' %}" class="btn btn-primary btn-sm">+ New</a>{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Customer</th><th>Car</th><th>Service</th><th>Amount</th><th>Status</th><th>Payment</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for tx in transactions %}
+        <tr>
+          <td><a href="{% url 'transaction_detail' tx.pk %}" style="color:var(--accent);text-decoration:none">#{{ tx.pk }}</a></td>
+          <td>{{ tx.customer }}</td>
+          <td>{% if tx.car %}{{ tx.car.plate_number }}{% else %}<span style="color:var(--muted)">—</span>{% endif %}</td>
+          <td>{{ tx.service.service_name }}</td>
+          <td>₱{{ tx.amount }}</td>
+          <td><span class="badge badge-{{ tx.status }}">{{ tx.get_status_display }}</span></td>
+          <td>
+            {% if tx.payment %}
+              <span class="badge badge-{{ tx.payment.status }}">{{ tx.payment.get_status_display }}</span>
+            {% else %}
+              <a href="{% url 'payment_create' tx.pk %}" class="btn btn-ghost btn-sm">Pay Now</a>
+            {% endif %}
+          </td>
+          <td style="color:var(--muted);font-size:.8rem">{{ tx.transaction_date|date:"M d, Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px">No transactions.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

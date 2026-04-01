@@ -1,0 +1,286 @@
+{% extends "customer_base.html" %}
+{% block title %}Book a Service{% endblock %}
+
+{% block extra_head %}
+{% load static %}
+<style>
+html { scroll-behavior: smooth; }
+.book-wrap { max-width: 860px; }
+
+.step-label {
+  font-size: .68rem; font-weight: 700; letter-spacing: .12em;
+  color: #888; text-transform: uppercase; margin-bottom: 12px;
+}
+
+/* Service grid */
+.svc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+.svc-col-title {
+  font-size: .65rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.svc-col-title::after { content: ''; flex: 1; height: 1px; background: #1e1e1e; }
+
+.svc-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; margin-bottom: 6px;
+  background: #0f0f0f; border: 1px solid #1e1e1e;
+  border-radius: 6px; cursor: pointer;
+  transition: border-color .12s, background .12s;
+}
+.svc-row:hover { background: #141414; border-color: #333; }
+.svc-row.selected { border-color: #e63030; background: rgba(230,48,48,.06); }
+.svc-row.selected-pkg { border-color: #c8960c; background: rgba(200,150,12,.06); }
+
+.svc-row-name { font-weight: 500; color: #e0e0e0; font-size: .88rem; }
+.svc-row-meta { color: #444; font-size: .73rem; margin-top: 2px; }
+.svc-row-price { font-weight: 700; color: #e63030; font-size: .9rem; flex-shrink: 0; margin-left: 12px; }
+.svc-row-price.pkg { color: #c8960c; }
+
+.pkg-badge {
+  display: inline-block; padding: 1px 6px;
+  background: rgba(200,150,12,.12); border: 1px solid rgba(200,150,12,.25);
+  border-radius: 3px; font-size: .58rem; font-weight: 700;
+  color: #c8960c; text-transform: uppercase; margin-bottom: 3px;
+}
+
+/* Form card */
+.form-card {
+  background: #0f0f0f; border: 1px solid #1e1e1e;
+  border-radius: 8px; padding: 24px;
+}
+
+input[type="date"], select {
+  background: #0a0a0a; border: 1px solid #2a2a2a; color: #e0e0e0;
+  padding: 9px 12px; border-radius: 6px; width: 100%;
+  font-size: .88rem; outline: none; color-scheme: dark;
+}
+input[type="date"]:focus, select:focus { border-color: #e63030; }
+
+.summary-box {
+  background: #0a0a0a; border: 1px solid #1e1e1e;
+  border-radius: 6px; padding: 14px 16px;
+  margin-bottom: 16px; display: none;
+}
+.sb-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+.sb-label { font-size: .72rem; color: #444; }
+.sb-val { font-size: .82rem; color: #ccc; font-weight: 500; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="book-wrap">
+  <div style="margin-bottom:28px">
+    <div style="font-size:.68rem;font-weight:700;letter-spacing:.12em;color:#555;text-transform:uppercase;margin-bottom:6px">New Booking</div>
+    <h1 style="font-size:1.6rem;font-weight:700;color:#fff">Book a Service</h1>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="step-label">Step 1 — Choose a Service</div>
+  <div class="svc-grid">
+
+    <!-- LEFT: Regular -->
+    <div>
+      <div class="svc-col-title" style="color:#888">Services</div>
+      {% load i18n %}
+      {% regroup services by service_type as service_groups %}
+      {% for group in service_groups %}
+        <div style="font-size:.6rem;color:#555;text-transform:uppercase;letter-spacing:.1em;
+                    margin-bottom:6px;{% if not forloop.first %}margin-top:14px;{% endif %}">
+          {{ group.grouper }}
+        </div>
+        {% for s in group.list %}
+        <div class="svc-row" id="svc-{{ s.pk }}"
+             onclick="selectService('{{ s.pk }}', '{{ s.service_name|escapejs }}', '{{ s.service_type|escapejs }}', '{{ s.price }}', '{{ s.duration_minutes }}', false)">
+          <div>
+            <div class="svc-row-name">{{ s.service_name }}</div>
+            <div class="svc-row-meta">⏱ {{ s.duration_minutes }} min{% if s.description %} · {{ s.description }}{% endif %}</div>
+          </div>
+          <div class="svc-row-price">₱{{ s.price }}</div>
+        </div>
+        {% endfor %}
+      {% empty %}
+        <p style="color:#444;font-size:.82rem">No services available.</p>
+      {% endfor %}
+    </div>
+
+    <!-- RIGHT: Packages -->
+    <div>
+      <div class="svc-col-title" style="color:#c8960c">★ Packages</div>
+      {% if package_services %}
+        {% for s in package_services %}
+        <div class="svc-row" id="svc-{{ s.pk }}" style="border-color:#1e1800"
+             onclick="selectService('{{ s.pk }}', '{{ s.service_name|escapejs }}', '{{ s.service_type|escapejs }}', '{{ s.price }}', '{{ s.duration_minutes }}', true)">
+          <div>
+            <div class="pkg-badge">Package</div>
+            <div class="svc-row-name">{{ s.service_name }}</div>
+            <div class="svc-row-meta">{{ s.service_type }} · ⏱ {{ s.duration_minutes }} min{% if s.description %} · {{ s.description }}{% endif %}</div>
+          </div>
+          <div class="svc-row-price pkg">₱{{ s.price }}</div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:#333;font-size:.82rem;border:1px dashed #1e1e1e;border-radius:6px;padding:16px;text-align:center">No packages available.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Step 2 + 3 form -->
+  <div class="form-card">
+    <form method="post">{% csrf_token %}
+      <input type="hidden" name="service" id="selected-service" value="{{ post.service|default:preselected }}">
+
+      <div class="step-label">Step 2 — Pick a Date & Time</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="form-group" style="margin-bottom:0">
+          <label style="color:#555">Date *</label>
+          <input type="date" name="scheduled_date" id="scheduled_date"
+                 value="{{ post.scheduled_date|default:'' }}" min="{{ today }}" required>
+          <div style="font-size:.7rem;color:#e63030;margin-top:5px">⚠ Closed on Sundays</div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label style="color:#555">Time *</label>
+          <select name="scheduled_time" id="scheduled_time" required>
+            <option value="">— Select time —</option>
+            <option value="06:00">6:00 AM</option>
+            <option value="06:30">6:30 AM</option>
+            <option value="07:00">7:00 AM</option>
+            <option value="07:30">7:30 AM</option>
+            <option value="08:00">8:00 AM</option>
+            <option value="08:30">8:30 AM</option>
+            <option value="09:00">9:00 AM</option>
+            <option value="09:30">9:30 AM</option>
+            <option value="10:00">10:00 AM</option>
+            <option value="10:30">10:30 AM</option>
+            <option value="11:00">11:00 AM</option>
+            <option value="11:30">11:30 AM</option>
+            <option value="12:00">12:00 PM</option>
+            <option value="12:30">12:30 PM</option>
+            <option value="13:00">1:00 PM</option>
+            <option value="13:30">1:30 PM</option>
+            <option value="14:00">2:00 PM</option>
+            <option value="14:30">2:30 PM</option>
+            <option value="15:00">3:00 PM</option>
+            <option value="15:30">3:30 PM</option>
+            <option value="16:00">4:00 PM</option>
+            <option value="16:30">4:30 PM</option>
+            <option value="17:00">5:00 PM</option>
+            <option value="17:30">5:30 PM</option>
+            <option value="18:00">6:00 PM</option>
+          </select>
+          <div style="font-size:.7rem;color:#444;margin-top:5px">6:00 AM – 6:00 PM · 30-min slots</div>
+        </div>
+      </div>
+
+      <div class="step-label">Step 3 — Select Vehicle</div>
+      <div class="form-group">
+        <select name="car">
+          <option value="">— No specific vehicle —</option>
+          {% for car in cars %}
+          <option value="{{ car.pk }}">{{ car.plate_number }} — {{ car.make }} {{ car.model_name }}</option>
+          {% endfor %}
+        </select>
+        {% if not cars %}
+        <div style="font-size:.72rem;color:#444;margin-top:5px">
+          No cars yet. <a href="{% url 'portal_add_car' %}" style="color:#4f9cf9">Add one</a>.
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label style="color:#555">Notes (optional)</label>
+        <textarea name="notes" placeholder="Any special instructions?"
+                  style="background:#0a0a0a;border:1px solid #2a2a2a;color:#e0e0e0;border-radius:6px;padding:9px 12px;width:100%;outline:none;resize:vertical;min-height:70px;font-size:.88rem">{{ post.notes|default:'' }}</textarea>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-box" id="book-summary">
+        <div class="sb-row"><span class="sb-label">Service</span><span class="sb-val" id="sum-service">—</span></div>
+        <div class="sb-row"><span class="sb-label">Price</span><span class="sb-val" id="sum-price">—</span></div>
+        <div class="sb-row"><span class="sb-label">Date</span><span class="sb-val" id="sum-date">—</span></div>
+        <div class="sb-row"><span class="sb-label">Time</span><span class="sb-val" id="sum-time">—</span></div>
+      </div>
+
+      <button id="book-btn" class="btn"
+              style="width:100%;justify-content:center;padding:11px;background:#222;color:#555;cursor:not-allowed;border-radius:6px;font-size:.88rem;font-weight:600"
+              disabled>Select a service to continue</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedSvc = null;
+
+function selectService(id, name, type, price, dur, isPkg) {
+  document.querySelectorAll('.svc-row').forEach(c => {
+    c.classList.remove('selected', 'selected-pkg');
+    c.style.borderColor = c.id.startsWith('svc-') && c.style.borderColor === 'rgb(200, 150, 12)' ? '#1e1800' : '#1e1e1e';
+  });
+  const card = document.getElementById('svc-' + id);
+  card.classList.add(isPkg ? 'selected-pkg' : 'selected');
+  document.getElementById('selected-service').value = id;
+  selectedSvc = { id, name, type, price, dur, isPkg };
+  updateSummary();
+}
+
+function updateSummary() {
+  if (!selectedSvc) return;
+  const date = document.getElementById('scheduled_date').value;
+  const time = document.getElementById('scheduled_time').value;
+  document.getElementById('sum-service').textContent = selectedSvc.name;
+  document.getElementById('sum-price').textContent   = '₱' + selectedSvc.price;
+  document.getElementById('sum-date').textContent    = date ? new Date(date + 'T00:00').toLocaleDateString('en-PH', {weekday:'short',month:'short',day:'numeric',year:'numeric'}) : '—';
+  document.getElementById('sum-time').textContent    = time ? formatTime(time) : '—';
+  document.getElementById('book-summary').style.display = 'block';
+  const btn = document.getElementById('book-btn');
+  if (date && time) {
+    btn.disabled = false;
+    btn.textContent = 'Confirm Booking →';
+    btn.style.background = '#e63030';
+    btn.style.color = '#fff';
+    btn.style.cursor = 'pointer';
+  } else {
+    btn.disabled = true;
+    btn.textContent = 'Pick a date & time to continue';
+    btn.style.background = '#222';
+    btn.style.color = '#555';
+    btn.style.cursor = 'not-allowed';
+  }
+}
+
+function formatTime(t) {
+  const [h, m] = t.split(':');
+  const hr = parseInt(h);
+  return `${hr % 12 || 12}:${m} ${hr >= 12 ? 'PM' : 'AM'}`;
+}
+
+document.getElementById('scheduled_date').addEventListener('change', function() {
+  if (this.value && new Date(this.value + 'T00:00').getDay() === 0) {
+    this.value = '';
+    let el = document.getElementById('date-error');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'date-error';
+      el.style.cssText = 'font-size:.78rem;color:#e63030;margin-top:6px;font-weight:600';
+      this.parentNode.appendChild(el);
+    }
+    el.textContent = '⛔ Closed on Sundays. Please choose another day.';
+    return;
+  }
+  const err = document.getElementById('date-error');
+  if (err) err.textContent = '';
+  updateSummary();
+});
+document.getElementById('scheduled_time').addEventListener('change', updateSummary);
+document.getElementById('scheduled_date').min = new Date().toISOString().split('T')[0];
+
+const preselected = "{{ preselected }}";
+if (preselected) {
+  const card = document.getElementById('svc-' + preselected);
+  if (card) { card.click(); setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100); }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "master.html" %}
+{% block title %}Remove Car{% endblock %}
+{% block page_title %}Remove Car{% endblock %}
+{% block content %}
+<div style="max-width:440px">
+  <div class="card">
+    <p style="margin-bottom:20px">Remove <strong>{{ car.plate_number }} ({{ car.make }} {{ car.model_name }})</strong>?</p>
+    <form method="post" style="display:flex;gap:10px">{% csrf_token %}
+      <button class="btn btn-danger">Yes, Remove</button>
+      <a href="{% url 'customer_detail' car.customer_id %}" class="btn btn-ghost">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

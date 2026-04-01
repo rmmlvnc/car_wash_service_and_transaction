@@ -1,0 +1,250 @@
+{% extends "customer_base.html" %}
+{% block title %}My Dashboard{% endblock %}
+
+{% block extra_head %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'customer_home.css' %}">
+<style>
+html { scroll-behavior: smooth; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<!-- Hero -->
+<div class="portal-hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-tag">PROFESSIONAL CARWASH & DETAILING</div>
+      <h1 class="hero-title">We Make Your<br>Car Shine.</h1>
+      <p class="hero-sub">Hello, {{ customer.first_name }} — book a service or manage your vehicles below.</p>
+      <div class="actions">
+        <a href="{% url 'portal_book' %}" class="btn btn-primary">+ Book a Service</a>
+        <a href="{% url 'portal_add_car' %}" class="btn btn-ghost">+ Add a Vehicle</a>
+      </div>
+    </div>
+    <div class="hero-img-wrap">
+      <img src="{% static 'bg.jpg' %}" alt="Car Wash" class="hero-img">
+    </div>
+  </div>
+</div>
+
+<!-- About Section -->
+<section id="about" class="about-section">
+  <div class="about-grid">
+    <div class="about-text">
+      <div class="about-logo-wrap">
+        <img src="{% static 'logo.jpg' %}" alt="Twin A&A Logo" class="about-logo">
+      </div>
+      <div class="about-tag">WHO WE ARE</div>
+      <h2 class="about-title">Twin A&amp;A Carwash<br>&amp; Detailing Services</h2>
+      <p class="about-desc">Located in the heart of Iligan City, Twin A&amp;A has been delivering premium car wash and auto-detailing services with passion and precision. We treat every vehicle like our own — combining skilled hands, quality products, and genuine care.</p>
+      <div class="about-highlights">
+        <div class="ah-item">
+          <div class="ah-icon">🕐</div>
+          <div><div class="ah-label">Open during</div><div class="ah-val">Mon – Sat | 6:00 AM – 6:00 PM</div></div>
+        </div>
+        <div class="ah-item">
+          <div class="ah-icon">📍</div>
+          <div><div class="ah-label">Location</div><div class="ah-val">Seminary Dr, Iligan City, Lanao del Norte</div></div>
+        </div>
+        <div class="ah-item">
+          <div class="ah-icon">📱</div>
+          <div><div class="ah-label">Contact</div><div class="ah-val">+63 965 548 2538</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="about-right">
+      <div class="about-img-wrap">
+        <img src="{% static 'carwash.jpg' %}" alt="Car Wash Service" class="about-img">
+      </div>
+      <div class="about-cards">
+        <div class="about-card"><div class="ac-num">01</div><div class="ac-title">Expert Team</div><div class="ac-desc">Trained professionals who take pride in every wash and detail job.</div></div>
+        <div class="about-card"><div class="ac-num">02</div><div class="ac-title">Quality Products</div><div class="ac-desc">We use only top-grade cleaning and detailing products safe for your vehicle.</div></div>
+        <div class="about-card"><div class="ac-num">03</div><div class="ac-title">Affordable Rates</div><div class="ac-desc">Premium service at prices that won't break the bank.</div></div>
+        <div class="about-card"><div class="ac-num">04</div><div class="ac-title">Fast Turnaround</div><div class="ac-desc">Efficient service without compromising quality.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats-row" style="margin-bottom:36px">
+  <div class="stat-card">
+    <div class="label">My Vehicles</div>
+    <div class="value accent">{{ cars.count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Total Bookings</div>
+    <div class="value">{{ transactions.count }}</div>
+  </div>
+</div>
+
+<!-- Services Section -->
+<section id="services" style="margin-bottom:48px;scroll-margin-top:90px">
+
+  <div style="margin-bottom:28px">
+    <div style="font-size:.7rem;font-weight:700;letter-spacing:.15em;color:#e63030;text-transform:uppercase;margin-bottom:6px">What We Offer</div>
+    <h2 style="font-size:1.6rem;font-weight:800;color:#fff">Our Services</h2>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start">
+
+    <!-- LEFT: Regular Services -->
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.12em;color:#aaa;text-transform:uppercase">Services</div>
+        <div style="flex:1;height:1px;background:#222"></div>
+      </div>
+
+      {% load i18n %}
+      {% regroup services by service_type as service_groups %}
+      {% for group in service_groups %}
+      <div style="margin-bottom:22px">
+        <!-- Category label -->
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;color:#e63030;
+                    text-transform:uppercase;margin-bottom:10px;padding-left:2px">
+          {{ group.grouper }}
+        </div>
+        <!-- Service rows -->
+        {% for s in group.list %}
+        <div style="display:flex;align-items:center;justify-content:space-between;
+                    padding:12px 16px;margin-bottom:6px;
+                    background:#111;border:1px solid #222;border-radius:8px;
+                    transition:border-color .15s"
+             onmouseover="this.style.borderColor='#333'" onmouseout="this.style.borderColor='#222'">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;color:#fff;font-size:.88rem;
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              {{ s.service_name }}
+            </div>
+            <div style="color:#555;font-size:.73rem;margin-top:2px">
+              ⏱ {{ s.duration_minutes }} min{% if s.description %} · {{ s.description }}{% endif %}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;margin-left:12px">
+            <span style="font-weight:800;color:#e63030;font-size:.95rem">₱{{ s.price }}</span>
+            <a href="{% url 'portal_book' %}?service={{ s.pk }}"
+               style="padding:5px 12px;background:#e63030;color:#fff;border-radius:5px;
+                      font-size:.7rem;font-weight:700;letter-spacing:.05em;
+                      text-decoration:none;text-transform:uppercase;transition:background .15s"
+               onmouseover="this.style.background='#c00'" onmouseout="this.style.background='#e63030'">
+              Book
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% empty %}
+      <p style="color:#555;font-size:.85rem">No services available.</p>
+      {% endfor %}
+    </div>
+
+    <!-- RIGHT: Packages -->
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.12em;color:#f5a623;text-transform:uppercase">★ Packages</div>
+        <div style="flex:1;height:1px;background:#2a2500"></div>
+      </div>
+
+      {% if package_services %}
+        {% for s in package_services %}
+        <div style="background:linear-gradient(135deg,#1a1500 0%,#111 70%);
+                    border:1px solid #3a2e00;border-radius:10px;padding:20px;
+                    margin-bottom:12px;position:relative;overflow:hidden;
+                    transition:border-color .15s"
+             onmouseover="this.style.borderColor='#f5a623'" onmouseout="this.style.borderColor='#3a2e00'">
+
+          <!-- Gold corner triangle -->
+          <div style="position:absolute;top:0;right:0;width:0;height:0;
+                      border-style:solid;border-width:0 44px 44px 0;
+                      border-color:transparent #f5a623 transparent transparent;opacity:.35"></div>
+          <div style="position:absolute;top:5px;right:5px;font-size:.55rem;font-weight:800;
+                      color:#f5a623;letter-spacing:.06em;z-index:1">PKG</div>
+
+          <div style="display:inline-block;padding:2px 8px;
+                      background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3);
+                      border-radius:4px;font-size:.62rem;font-weight:700;
+                      color:#f5a623;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">
+            Package Deal
+          </div>
+
+          <div style="font-weight:700;color:#fff;font-size:.95rem;margin-bottom:4px">{{ s.service_name }}</div>
+          <div style="color:#777;font-size:.75rem;margin-bottom:4px">{{ s.service_type }}</div>
+          <div style="color:#555;font-size:.73rem;margin-bottom:14px">
+            ⏱ {{ s.duration_minutes }} min{% if s.description %} · {{ s.description }}{% endif %}
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:1.15rem;font-weight:800;color:#f5a623">₱{{ s.price }}</span>
+            <a href="{% url 'portal_book' %}?service={{ s.pk }}"
+               style="padding:6px 14px;background:#f5a623;color:#111;border-radius:6px;
+                      font-size:.7rem;font-weight:800;letter-spacing:.05em;
+                      text-decoration:none;text-transform:uppercase;transition:background .15s"
+               onmouseover="this.style.background='#e09b1a'" onmouseout="this.style.background='#f5a623'">
+              Book →
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div style="background:#111;border:1px dashed #2a2a2a;border-radius:10px;
+                  padding:32px;text-align:center;color:#444;font-size:.85rem">
+        No packages available yet.
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+
+<!-- My Vehicles + Recent Bookings -->
+<div class="bottom-grid">
+
+  <!-- My Cars -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">My Vehicles</span>
+      <a href="{% url 'portal_add_car' %}" class="btn btn-ghost btn-sm">+ Add</a>
+    </div>
+    {% for car in cars %}
+    <div style="padding:12px 0;border-bottom:1px solid #222">
+      <div style="font-weight:600;color:#fff">{{ car.plate_number }}</div>
+      <div style="color:#666;font-size:.8rem;margin-top:2px">
+        {{ car.year|default:"" }} {{ car.make }} {{ car.model_name }}
+        {% if car.color %} · {{ car.color }}{% endif %}
+        · {{ car.get_car_type_display }}
+      </div>
+    </div>
+    {% empty %}
+    <p style="color:#666;font-size:.85rem">No vehicles yet. <a href="{% url 'portal_add_car' %}" style="color:#4f9cf9">Add one</a>.</p>
+    {% endfor %}
+  </div>
+
+  <!-- Recent Bookings -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Recent Bookings</span>
+      <a href="{% url 'portal_book' %}" class="btn btn-primary btn-sm">+ Book</a>
+    </div>
+    {% for tx in transactions|slice:":5" %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #222">
+      <div>
+        <div style="font-weight:500;font-size:.88rem;color:#fff">{{ tx.service.service_name }}</div>
+        <div style="color:#666;font-size:.75rem">{{ tx.transaction_date|date:"M d, Y" }}{% if tx.car %} · {{ tx.car.plate_number }}{% endif %}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="badge badge-{{ tx.status }}">{{ tx.get_status_display }}</span>
+        {% if not tx.payment %}
+        <a href="{% url 'portal_pay' tx.pk %}" class="btn btn-primary btn-sm">Pay</a>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <p style="color:#666;font-size:.85rem;padding:12px 0">No bookings yet.</p>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

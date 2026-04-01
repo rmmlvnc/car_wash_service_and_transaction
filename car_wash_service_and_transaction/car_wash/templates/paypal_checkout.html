@@ -1,0 +1,97 @@
+{% extends "master.html" %}
+{% block title %}PayPal Checkout{% endblock %}
+{% block page_title %}PayPal Checkout{% endblock %}
+{% block extra_head %}
+<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=PHP"></script>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:480px">
+  <div class="breadcrumb">
+    <a href="{% url 'transaction_list' %}">Transactions</a> /
+    <a href="{% url 'transaction_detail' transaction.pk %}">#{{ transaction.pk }}</a> / PayPal
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="pay-summary">
+      <div class="di-label">Customer</div>
+      <div style="font-weight:600;margin-bottom:8px">{{ transaction.customer }}</div>
+      <div class="di-label">Service</div>
+      <div style="margin-bottom:8px">{{ transaction.service.service_name }}</div>
+      <hr class="divider">
+      <div class="di-label">Total</div>
+      <div class="pay-amount">₱{{ transaction.amount }}</div>
+    </div>
+
+    <div id="paypal-status" style="display:none;margin-bottom:16px;"></div>
+    <div id="paypal-button-container"></div>
+
+    <div style="margin-top:16px">
+      <a href="{% url 'transaction_detail' transaction.pk %}" class="btn btn-ghost" style="width:100%;justify-content:center">Cancel</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CAPTURE_URL  = "{% url 'paypal_capture' transaction.pk %}";
+const REDIRECT_URL = "{% url 'transaction_detail' transaction.pk %}";
+const CSRF_TOKEN   = "{{ csrf_token }}";
+
+paypal.Buttons({
+  style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' },
+
+  createOrder: function(data, actions) {
+    return actions.order.create({
+      purchase_units: [{
+        description: "{{ transaction.service.service_name|escapejs }}",
+        amount: { value: "{{ transaction.amount }}", currency_code: "PHP" }
+      }]
+    });
+  },
+
+  onApprove: async function(data, actions) {
+    const statusEl = document.getElementById('paypal-status');
+    statusEl.style.display = 'block';
+    statusEl.className = 'alert alert-info';
+    statusEl.textContent = 'Processing payment…';
+
+    try {
+      const form = new FormData();
+      form.append('orderID', data.orderID);
+      form.append('payerID', data.payerID);
+      form.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+      const res = await fetch(CAPTURE_URL, { method: 'POST', body: form });
+
+      if (res.ok) {
+        statusEl.className = 'alert alert-success';
+        statusEl.textContent = '✓ Payment successful! Redirecting…';
+        setTimeout(() => window.location.href = REDIRECT_URL, 1500);
+      } else {
+        throw new Error('Capture failed');
+      }
+    } catch(e) {
+      statusEl.className = 'alert alert-error';
+      statusEl.textContent = 'Payment could not be captured. Please try again.';
+    }
+  },
+
+  onError: function(err) {
+    const statusEl = document.getElementById('paypal-status');
+    statusEl.style.display = 'block';
+    statusEl.className = 'alert alert-error';
+    statusEl.textContent = 'PayPal error: ' + err;
+  },
+
+  onCancel: function() {
+    const statusEl = document.getElementById('paypal-status');
+    statusEl.style.display = 'block';
+    statusEl.className = 'alert alert-info';
+    statusEl.textContent = 'Payment cancelled.';
+  }
+
+}).render('#paypal-button-container');
+</script>
+{% endblock %}
