@@ -252,7 +252,8 @@ def payment_create(request, tx_pk):
 
 
 # ─── PAYPAL SANDBOX ───────────────────────────────────────────────────────────
-PAYPAL_CLIENT_ID     = 'AYiMiEJC5xh7XoCYGJF1KrqIDqacrsDHhUCkzrJe3mq5EYRdumqVWLMBgSi5MF_pj3mO1ggKwqk0TbxD'
+from django.conf import settings as django_settings
+PAYPAL_CLIENT_ID = getattr(django_settings, 'PAYPAL_CLIENT_ID', '')
 PAYPAL_CLIENT_SECRET = ''
 PAYPAL_BASE_URL      = 'https://api-m.sandbox.paypal.com'
 
